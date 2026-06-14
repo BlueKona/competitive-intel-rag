@@ -1,0 +1,196 @@
+{
+  "name": "Competitor Intelligence Chat",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "inputPlaceholder": "e.g. Why do people leave HubSpot?",
+          "subtitle": "Ask me why customers leave any competitor. Get a battle card instantly.",
+          "title": "Competitor Intelligence Bot"
+        }
+      },
+      "id": "a512a379-e681-4fb9-ad67-75ee775c6e94",
+      "name": "Competitor Chat",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -64,
+        304
+      ],
+      "webhookId": "REPLACE_ON_IMPORT"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a ruthlessly useful competitive intelligence analyst for B2B sales teams.\n\nWhen asked about a competitor, use the G2 Reviews Knowledge Base tool to find real customer complaints scraped directly from G2. Search multiple times with different keywords: competitor name + \"cons\", competitor name + \"switched\", competitor name + \"too expensive\", competitor name + \"support\".\n\nAlways format your response as a battle card:\n\n🚨 **WHY CUSTOMERS LEAVE [COMPETITOR NAME]**\n• [Complaint 1 with data]\n• [Complaint 2 with data]\n• [Complaint 3 with data]\n\n💬 **EXACT QUOTES FOR COLD OUTREACH**\n> \"[Quote from a real G2 reviewer]\"\n> \"[Quote from a real G2 reviewer]\"\n\n🛡️ **OBJECTION HANDLER**\nWhen they say \"[pushback]\" → \"[counter move]\"\n\n📌 **PITCH ANGLE IN ONE LINE**\n[One punchy sentence positioning against this competitor]\n\nBe direct. Be specific. Every word must be usable by an SDR on a cold call."
+        }
+      },
+      "id": "16dfbba7-7374-49dc-b7f8-c3d2413997c0",
+      "name": "Competitor Intelligence Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "c41a9ce8-62bf-4b04-942f-a290e0512d89",
+      "name": "GPT-5 Mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        528
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "35e84354-acf1-427c-8e95-ea26d97f3ccf",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search real G2 customer reviews scraped directly from G2 product pages. Use this to find why customers leave a competitor, their top complaints, exact quotes, and switching triggers. Search with the competitor name plus keywords like cons, switched, too expensive, support issues, missing features.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "id",
+          "value": "competitor-reviews"
+        },
+        "topK": 8,
+        "options": {}
+      },
+      "id": "94512e8d-f019-4b64-a21e-f65c11b729a6",
+      "name": "G2 Reviews Knowledge Base",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        528
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "REPLACE_WITH_YOUR_PINECONE_CREDENTIAL_ID",
+          "name": "Pinecone API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "dfcb206f-e22e-49ea-9cd0-735a697987b5",
+      "name": "Review Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        736
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Competitor Chat": {
+      "main": [
+        [
+          {
+            "node": "Competitor Intelligence Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-5 Mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Competitor Intelligence Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Competitor Intelligence Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "G2 Reviews Knowledge Base": {
+      "ai_tool": [
+        [
+          {
+            "node": "Competitor Intelligence Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "G2 Reviews Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": [
+    {
+      "name": "Competitor"
+    }
+  ]
+}

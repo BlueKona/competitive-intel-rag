@@ -1,0 +1,260 @@
+{
+  "name": "G2 Competitor Review Indexer",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "018f5d0d-54d4-429e-8c57-953a710f969a",
+      "name": "Run Indexer",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "comp-1",
+              "name": "competitor",
+              "value": "Salesforce",
+              "type": "string"
+            },
+            {
+              "id": "comp-2",
+              "name": "g2ReviewsUrl",
+              "value": "https://www.g2.com/products/salesforce-crm/reviews",
+              "type": "string"
+            },
+            {
+              "id": "comp-3",
+              "name": "firecrawlApiKey",
+              "value": "YOUR_FIRECRAWL_KEY",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f232fbaa-7f23-49aa-9853-6bb1d14a5f4b",
+      "name": "Set Competitor Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$('Set Competitor Config').item.json.firecrawlApiKey}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"url\": $('Set Competitor Config').item.json.g2ReviewsUrl, \"formats\": [\"markdown\"], \"onlyMainContent\": true } }}",
+        "options": {}
+      },
+      "id": "2b0050ca-273a-42fa-82bf-62f102a85c4d",
+      "name": "Scrape G2 Reviews via Firecrawl",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        688,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "id",
+          "value": "competitor-reviews"
+        },
+        "options": {
+          "clearNamespace": true
+        }
+      },
+      "id": "4a7d4b20-f6fa-4d35-95e4-a154c6f43928",
+      "name": "Store Reviews in Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        304
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "REPLACE_WITH_YOUR_PINECONE_CREDENTIAL_ID",
+          "name": "Pinecone API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f2481fc1-62ab-4be3-a8cd-d1ab53f9ec14",
+      "name": "OpenAI Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        528
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $(\"Scrape G2 Reviews via Firecrawl\").item.json.data.markdown }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "competitor",
+                "value": "={{ $(\"Set Competitor Config\").item.json.competitor }}"
+              },
+              {
+                "name": "source",
+                "value": "g2_reviews"
+              },
+              {
+                "name": "url",
+                "value": "={{ $(\"Set Competitor Config\").item.json.g2ReviewsUrl }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c4aff691-14ca-4c6f-a9d3-4be7a7f1d791",
+      "name": "Review Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 600,
+        "chunkOverlap": 80,
+        "options": {}
+      },
+      "id": "0b8e340a-e56c-443b-a1a9-d085bfd9c1f9",
+      "name": "Review Chunker",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        736
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run Indexer": {
+      "main": [
+        [
+          {
+            "node": "Set Competitor Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Competitor Config": {
+      "main": [
+        [
+          {
+            "node": "Scrape G2 Reviews via Firecrawl",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape G2 Reviews via Firecrawl": {
+      "main": [
+        [
+          {
+            "node": "Store Reviews in Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store Reviews in Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Store Reviews in Pinecone",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Chunker": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Review Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": [
+    {
+      "name": "Competitor"
+    }
+  ]
+}

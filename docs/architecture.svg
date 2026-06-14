@@ -1,0 +1,77 @@
+<svg viewBox="0 0 1600 820" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="820" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="800" y="50" text-anchor="middle" font-size="30" font-weight="700" fill="#0f172a">competitive-intel-rag · architecture</text>
+  <text x="800" y="84" text-anchor="middle" font-size="16" fill="#475569">Two workflows in n8n — a write path that indexes reviews, and a read path that serves rep-ready output.</text>
+
+  <!-- ===== WRITE PATH ===== -->
+  <rect x="40" y="120" width="1520" height="160" rx="14" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="7 7"/>
+  <text x="60" y="143" font-size="14" font-weight="700" fill="#3b82f6" letter-spacing="1">WRITE PATH — INDEXER · RUNS ON DEMAND</text>
+
+  <!-- write boxes -->
+  <g>
+    <rect x="175" y="160" width="230" height="95" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text x="290" y="200" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">G2 reviews page</text>
+    <text x="290" y="225" text-anchor="middle" font-size="13" fill="#475569">public competitor URL</text>
+
+    <rect x="515" y="160" width="230" height="95" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text x="630" y="200" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">Firecrawl</text>
+    <text x="630" y="225" text-anchor="middle" font-size="13" fill="#475569">scrape → markdown</text>
+
+    <rect x="855" y="160" width="230" height="95" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text x="970" y="200" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">Recursive chunker</text>
+    <text x="970" y="225" text-anchor="middle" font-size="13" fill="#475569">600 chars · 80 overlap</text>
+
+    <rect x="1195" y="160" width="230" height="95" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <text x="1310" y="200" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">OpenAI embeddings</text>
+    <text x="1310" y="225" text-anchor="middle" font-size="13" fill="#475569">vectorize chunks</text>
+  </g>
+
+  <!-- write arrows -->
+  <line x1="405" y1="207" x2="513" y2="207" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="745" y1="207" x2="853" y2="207" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1085" y1="207" x2="1193" y2="207" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- funnel into pinecone (elbow, upsert) -->
+  <path d="M1310,255 L1310,460 L1032,460" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1150" y="450" text-anchor="middle" font-size="13" fill="#475569" font-style="italic">upsert + metadata</text>
+
+  <!-- ===== PINECONE (shared) ===== -->
+  <rect x="570" y="400" width="460" height="120" rx="12" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2.5"/>
+  <text x="800" y="440" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">Pinecone — vector store</text>
+  <text x="800" y="468" text-anchor="middle" font-size="14" fill="#475569">index: competitor-reviews</text>
+  <text x="800" y="492" text-anchor="middle" font-size="13" fill="#475569">metadata on every chunk: competitor · source · url</text>
+
+  <!-- shared retrieve link -->
+  <line x1="800" y1="520" x2="800" y2="658" stroke="#475569" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="820" y="595" font-size="13" fill="#475569" font-style="italic">retrieve-as-tool · top-8</text>
+
+  <!-- ===== READ PATH ===== -->
+  <rect x="40" y="620" width="1520" height="160" rx="14" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="7 7"/>
+  <text x="60" y="643" font-size="14" font-weight="700" fill="#10b981" letter-spacing="1">READ PATH — CHAT · RUNS PER QUERY</text>
+
+  <g>
+    <rect x="250" y="660" width="280" height="95" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+    <text x="390" y="700" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">User question</text>
+    <text x="390" y="725" text-anchor="middle" font-size="13" fill="#475569">"Why do people leave Salesforce?"</text>
+
+    <rect x="660" y="660" width="280" height="95" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+    <text x="800" y="700" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">n8n Agent · GPT-5 mini</text>
+    <text x="800" y="725" text-anchor="middle" font-size="13" fill="#475569">multi-query · synthesize</text>
+
+    <rect x="1070" y="660" width="280" height="95" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+    <text x="1210" y="700" text-anchor="middle" font-size="18" font-weight="600" fill="#0f172a">Battle card / sequence</text>
+    <text x="1210" y="725" text-anchor="middle" font-size="13" fill="#475569">rep-ready output</text>
+  </g>
+
+  <!-- read arrows -->
+  <line x1="530" y1="707" x2="658" y2="707" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="940" y1="707" x2="1068" y2="707" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>
