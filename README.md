@@ -90,7 +90,7 @@ This is a working proof of concept, and I made deliberate trade-offs to get it t
 
 ## Demo
 
-📹 **90-second walkthrough:** _[demo video link — coming soon]_
+📹 **Short walkthrough:** [see it on LinkedIn →](https://www.linkedin.com/posts/cody-goodin_the-point-is-not-scraping-reviews-the-point-ugcPost-7469947289336344579-AA0K)
 
 ## Setup
 
